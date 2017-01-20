@@ -1,0 +1,137 @@
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	//Below are the functions described in the excersice
+	RunClockWithBalls(30)
+	RunClockWithBalls(45)
+	RunClockWithBallsWithLimitCycle(30, 325)
+}
+
+func IsArrayInOrder(main []int) bool {
+	var ordered bool = true
+	for x := 0; x < len(main); x++ {
+		if main[x] != x+1 {
+			ordered = false
+			break
+		}
+	}
+	return ordered
+}
+
+func Shift(s []int) int {
+	var first = s[0]
+	for x := 0; x < len(s)-1; x++ {
+		s[x] = s[x+1]
+	}
+	s[len(s)-1] = 0
+	return first
+}
+func Pop(s []int) int {
+	var last = 0
+	for x := len(s) - 1; x >= 0; x-- {
+		if s[x] != 0 {
+			last = s[x]
+			s[x] = 0
+			break
+		}
+	}
+	return last
+}
+func Push(s []int, i int) bool {
+	var success bool = false
+	for x := 0; x < len(s); x++ {
+		if s[x] == 0 {
+			s[x] = i
+			success = true
+			break
+
+		}
+	}
+	return success
+}
+func Dump(s []int, Main []int) {
+	for x := len(s) - 1; x >= 0; x-- {
+		Push(Main, s[x])
+		s[x] = 0
+	}
+}
+
+func RunClockWithBalls(numberOfBalls int) {
+	Minute := make([]int, 4)
+	FiveMinute := make([]int, 11)
+	Hour := make([]int, 11)
+	Main := make([]int, numberOfBalls)
+
+	Counter := make([]int, 1)
+	Counter[0] = 0
+
+	for x := 1; x <= numberOfBalls; x++ {
+		Main[x-1] = x
+	}
+
+	Run(Minute, FiveMinute, Hour, Main, Counter)
+}
+
+func RunClockWithBallsWithLimitCycle(numberOfBalls int, cycleLimit int) {
+	Minute := make([]int, 4)
+	FiveMinute := make([]int, 11)
+	Hour := make([]int, 11)
+	Main := make([]int, numberOfBalls)
+
+	Counter := make([]int, 2)
+	Counter[0] = 0
+	Counter[1] = cycleLimit
+
+	for x := 1; x <= numberOfBalls; x++ {
+		Main[x-1] = x
+	}
+	RunWithLimit(Minute, FiveMinute, Hour, Main, Counter)
+}
+
+func Run(Minute []int, FiveMinute []int, Hour []int, Main []int, Counter []int) {
+	var run = true
+	Counter[0]++
+	var currentBall = Shift(Main)
+	if !Push(Minute, currentBall) {
+		Dump(Minute, Main)
+		if !Push(FiveMinute, currentBall) {
+			Dump(FiveMinute, Main)
+			if !Push(Hour, currentBall) {
+				Dump(Hour, Main)
+				Push(Main, currentBall)
+				run = !IsArrayInOrder(Main)
+			}
+		}
+	}
+	if run {
+		Run(Minute, FiveMinute, Hour, Main, Counter)
+	} else {
+		fmt.Printf("%v balls cycle after %d days\n", len(Main), Counter[0]/1440)
+	}
+}
+
+func RunWithLimit(Minute []int, FiveMinute []int, Hour []int, Main []int, Counter []int) {
+	if Counter[0] < Counter[1] {
+		Counter[0]++
+		var currentBall = Shift(Main)
+		if !Push(Minute, currentBall) {
+			Dump(Minute, Main)
+			if !Push(FiveMinute, currentBall) {
+				Dump(FiveMinute, Main)
+				if !Push(Hour, currentBall) {
+					Dump(Hour, Main)
+					Push(Main, currentBall)
+				}
+			}
+		}
+
+		RunWithLimit(Minute, FiveMinute, Hour, Main, Counter)
+
+	} else {
+		fmt.Printf("{Min:%v,FiveMin:%v,Hour:%v,Main:%v}", Minute, FiveMinute, Hour, Main)
+	}
+}
